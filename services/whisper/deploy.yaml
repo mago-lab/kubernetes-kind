@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-whisper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-whisper
+  template:
+    metadata:
+      labels:
+        app: test-whisper
+    spec:
+      containers:
+      - name: test-whisper
+        image: test-whisper:latest
+        imagePullPolicy: Never     # ← 반드시 Never로 (풀 시도 금지)
+        env:
+        - name: LC_ALL
+          value: "C.UTF-8"
+        ports:
+        - containerPort: 59005
+        volumeMounts:
+        - name: localtime
+          mountPath: /etc/localtime
+          readOnly: true
+        securityContext:
+          capabilities:
+            add:
+            - SYS_ADMIN
+        command: ["bash"]
+        args: ["./scripts/run_app.sh"]
+        stdin: true
+        tty: true
+      volumes:
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+          type: File
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-whisper-service
+spec:
+  type: NodePort
+  selector:
+    app: test-whisper
+  ports:
+  - port: 9005
+    targetPort: 59005
+    nodePort: 30081
