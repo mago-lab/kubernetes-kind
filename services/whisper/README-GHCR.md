@@ -5,6 +5,9 @@
 ## 파일 설명
 
 - `deploy-ghcr.yaml`: GHCR에서 이미지를 다운받아 배포하는 YAML 파일
+- `ghcr-secret.yaml`: GHCR 인증을 위한 Secret YAML 파일 (선택사항)
+- `deploy-ghcr.sh`: 자동화된 배포 스크립트
+- `create-ghcr-secret.sh`: GHCR Secret 생성 스크립트
 - `deploy.yaml`: 로컬 이미지를 사용하는 기존 YAML 파일
 
 ## 사용 방법
@@ -12,21 +15,21 @@
 ### 1. 기본 배포 (Public 이미지인 경우)
 
 ```bash
-# GitHub 사용자명을 실제 값으로 변경
+# 기본 배포 (Secret 없이)
 kubectl apply -f deploy-ghcr.yaml
 ```
 
-**주의사항**: `{YOUR_GITHUB_USERNAME}` 부분을 실제 GitHub 사용자명으로 변경해야 합니다.
+**참고**: 이미지가 Public인 경우 Secret 없이도 배포할 수 있습니다.
 
 ### 2. Private 이미지인 경우 (Secret 사용)
 
-#### 2.1 Docker 로그인 및 Secret 생성
+#### 2.1 Secret 생성
 
 ```bash
-# GHCR에 로그인
-echo $GITHUB_TOKEN | docker login ghcr.io -u YOUR_GITHUB_USERNAME --password-stdin
+# 방법 1: 스크립트 사용 (권장)
+./create-ghcr-secret.sh
 
-# Docker config를 Secret으로 생성
+# 방법 2: 수동 생성
 kubectl create secret docker-registry ghcr-secret \
   --docker-server=ghcr.io \
   --docker-username=YOUR_GITHUB_USERNAME \
